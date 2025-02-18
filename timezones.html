@@ -17,20 +17,31 @@
     <h2 id="availability">Loading office hours...</h2>
     <script>
         function convertToUserTime(pstHours) {
-            const pstOffset = -8; // PST UTC offset
-            const userOffset = new Date().getTimezoneOffset() / -60; // User's UTC offset
-            let convertedStart = pstHours[0] + (userOffset - pstOffset);
-            let convertedEnd = pstHours[1] + (userOffset - pstOffset);
-            if (convertedStart < 0) convertedStart += 24;
-            if (convertedEnd < 0) convertedEnd += 24;
-            return { start: convertedStart, end: convertedEnd };
+            const pstDate = new Date();
+            pstDate.setUTCHours(pstHours[0] + 8, 0, 0, 0); // Convert PST start to UTC
+            const userStart = new Intl.DateTimeFormat('en-US', { 
+                hour: 'numeric', 
+                minute: '2-digit', 
+                hour12: false, 
+                timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone 
+            }).format(pstDate);
+            
+            pstDate.setUTCHours(pstHours[1] + 8); // Convert PST end to UTC
+            const userEnd = new Intl.DateTimeFormat('en-US', { 
+                hour: 'numeric', 
+                minute: '2-digit', 
+                hour12: false, 
+                timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone 
+            }).format(pstDate);
+
+            return { start: userStart, end: userEnd };
         }
 
         function updateAvailability() {
             const originalHours = [7, 15]; // 7 AM - 3 PM PST
             const { start, end } = convertToUserTime(originalHours);
             document.getElementById("availability").innerText = 
-                `We will be available from ${Math.floor(start)}:00 to ${Math.floor(end)}:00 in your local time.`;
+                `We will be available from ${start} to ${end} in your local time.`;
         }
 
         updateAvailability();
